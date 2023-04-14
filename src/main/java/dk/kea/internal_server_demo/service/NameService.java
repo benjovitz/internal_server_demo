@@ -20,6 +20,7 @@ public class NameService {
     PersonRepo personRepo;
     public NameService(PersonRepo personRepo){
     this.personRepo = personRepo;
+        System.out.println(getInfo2("Bitten"));
     }
 
     public Mono<GenderReponse> getInfo(String name) {
@@ -48,6 +49,38 @@ public class NameService {
                     System.out.println("from api");
                     return Mono.just(genderReponse);
                 });
+    }
+    //cant get this one to work with the endpoint, it works when calling it from the code
+    //There was an unexpected error (type=Internal Server Error, status=500).
+    //block()/blockFirst()/blockLast() are blocking, which is not supported in thread reactor-http-nio-6
+    public GenderReponse getInfo2(String name) {
+        if(personRepo.existsById(name)){
+            Person p = personRepo.findById(name).orElseThrow();
+            GenderReponse genderReponse = new GenderReponse(p);
+            System.out.println("from database");
+            return genderReponse;
+        }
+        Mono<POJOGender> gender = getGenderForName(name);
+        Mono<POJOAge> age = getAgeForName(name);
+        Mono<Nation> nation = getNationForName(name);
+        var rs = Mono.zip(gender, age, nation)
+                .map(t -> {
+                    Person p = new Person();
+                    p.setName(name);
+                    p.setGender(t.getT1().getGender());
+                    p.setGenderProbability(t.getT1().getProbability());
+                    p.setAge(t.getT2().getAge());
+                    p.setAgeCount(t.getT2().getCount());
+                    List<POJONation> nations = t.getT3().getCountry();
+                    p.setCountry(nations.get(0).getCountry_id());
+                    p.setCountryProb(nations.get(0).getProbability());
+                    GenderReponse genderReponse = new GenderReponse(p);
+                    personRepo.save(p);
+                    System.out.println("from api");
+                    return genderReponse;
+                });
+        GenderReponse genderReponse = rs.block();
+        return genderReponse;
     }
 
 

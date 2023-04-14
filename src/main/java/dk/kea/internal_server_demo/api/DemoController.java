@@ -26,5 +26,9 @@ public class DemoController {
     public Mono<GenderReponse> getInfo(@PathVariable String name){
         return nameService.getInfo(name);
     }
+    @GetMapping("/name-info2/{name}")
+    public GenderReponse getInfo2(@PathVariable String name){
+        return nameService.getInfo2(name);
+    }
 
 }
