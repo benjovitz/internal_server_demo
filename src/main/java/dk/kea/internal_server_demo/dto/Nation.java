@@ -4,17 +4,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
-public class Gender {
-    String gender;
+public class Nation {
+
     String name;
-    int count;
-    double probability;
-
-    public String toString(){
-        return gender;
-    }
+    List<POJONation> country;
 }
-

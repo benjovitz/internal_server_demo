@@ -1,6 +1,7 @@
 package dk.kea.internal_server_demo.api;
 
 import dk.kea.internal_server_demo.dto.Gender;
+import dk.kea.internal_server_demo.service.NameService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -31,9 +32,10 @@ public class RemoteApiTester implements CommandLineRunner {
         //System.out.println(randomStr);
         //callSlowEndpointBlocking();
         //callSlowEndpointNonBlocking();
-        System.out.println(getGenderForName("Daniel"));
-        getGendersBlocking();
-        getGendersNonBlocking();
+        //System.out.println(getGenderForName("Daniel"));
+        //getGendersBlocking();
+        //getGendersNonBlocking();
+
     }
 
     public void callSlowEndpointBlocking(){
@@ -72,7 +74,7 @@ public class RemoteApiTester implements CommandLineRunner {
         System.out.println(randoms.stream().collect(Collectors.joining(",")));
     }
 
-    Mono<Gender> getGenderForName(String name) {
+    public Mono<Gender> getGenderForName(String name) {
         WebClient client = WebClient.create();
         Mono<Gender> gender = client.get()
                 .uri("https://api.genderize.io?name="+name)
@@ -80,13 +82,16 @@ public class RemoteApiTester implements CommandLineRunner {
                 .bodyToMono(Gender.class);
         return gender;
     }
+
     List<String> names = Arrays.asList("lars", "peter", "sanne", "kim", "david", "maja");
 
 
     public void getGendersBlocking() {
         long start = System.currentTimeMillis();
         List<Gender> genders = names.stream().map(name -> getGenderForName(name).block()).toList();
+        List<String> genders2 = genders.stream().map(g->g.toString()).toList();
         long end = System.currentTimeMillis();
+        System.out.println(genders2);
         System.out.println("Time for six external requests, BLOCKING: "+ (end-start));
     }
 
